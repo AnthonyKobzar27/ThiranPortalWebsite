@@ -7,7 +7,6 @@ import Layout from './components/Layout';
 
 // Import Pages
 import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import Reports from './pages/Reports';
 import Account from './pages/Account';
@@ -23,11 +22,7 @@ function App() {
             <Home />
           </Layout>
         } />
-        <Route path="/dashboard" element={
-          <Layout>
-            <Dashboard />
-          </Layout>
-        } />
+        
         <Route path="/analytics" element={
           <Layout>
             <Analytics />

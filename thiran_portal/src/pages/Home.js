@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 function Home() {
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    // Retrieve username from local storage
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
+
   return (
     <header className="App-header">
       <div className="hero-section">
-        <h1>Analytics for <span className="gradient-text">modern teams</span></h1>
+        {username ? (
+          <h1>Welcome <span className="gradient-text">{username}</span></h1>
+        ) : (
+          <h1>Analytics for <span className="gradient-text">Modern Teams</span></h1>
+        )}
         <p>Track performance, analyze trends, and make data-driven decisions with Thiran's powerful analytics platform.</p>
         <button className="button primary">Get Started</button>
       </div>

@@ -1,14 +1,35 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function Layout({ children }) {
   const location = useLocation();
   const path = location.pathname;
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [username, setUsername] = useState('');
+  const navigate = useNavigate();
 
   const toggleAccountDropdown = () => {
     setShowAccountDropdown(!showAccountDropdown);
   };
+
+  const toggleUserDropdown = () => {
+    setShowUserDropdown(!showUserDropdown);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('username'); // Clear username from local storage
+    setUsername(''); // Clear username state
+    navigate('/account'); // Redirect to account page
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   return (
     <div className="App">
@@ -26,7 +47,7 @@ function Layout({ children }) {
           <div className="account-dropdown-container">
             <div 
               className="profile-icon" 
-              onClick={toggleAccountDropdown}
+              onClick={username ? (toggleUserDropdown) : (toggleAccountDropdown)}
               aria-haspopup="true"
               aria-expanded={showAccountDropdown}
             >
@@ -45,6 +66,13 @@ function Layout({ children }) {
                 <Link to="/account?register=true" className="dropdown-item">
                   Register
                 </Link>
+              </div>
+            )}
+
+            {showUserDropdown && (
+              <div className="account-dropdown">
+                <p>Hello {username}!</p>
+                <button onClick={handleLogout} className="dropdown-item">Log Out</button>
               </div>
             )}
           </div>
