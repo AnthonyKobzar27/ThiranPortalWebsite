@@ -20,6 +20,44 @@ const client = new MongoClient(uri, {
   }
 });
 
+// Function to generate a random 10-character passcode
+const generatePasscode = () => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let passcode = '';
+  for (let i = 0; i < 10; i++) {
+    passcode += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return passcode;
+};
+
+// Create team endpoint
+app.post('/api/create-team', async (req, res) => {
+  const { name } = req.body; // Get the team name from the request
+  const passcode = generatePasscode(); // Generate a random passcode
+
+  try {
+    await client.connect();
+    const database = client.db("user_activity");
+    const teamsCollection = database.collection("teams");
+
+    // Check if the team name already exists
+    const existingTeam = await teamsCollection.findOne({ name });
+    if (existingTeam) {
+      return res.status(400).json({ message: 'Team name already exists.' });
+    }
+
+    const newTeam = { name, passcode };
+    await teamsCollection.insertOne(newTeam);
+
+    res.status(201).json({ message: 'Team created successfully.', passcode }); // Return the passcode to the team leader
+  } catch (error) {
+    console.error('Error creating team:', error);
+    res.status(500).json({ message: 'Server error' });
+  } finally {
+    await client.close();
+  }
+});
+
 // Register endpoint
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
@@ -52,7 +90,6 @@ app.post('/api/register', async (req, res) => {
 // Login endpoint
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  console.log('Login attempt for username:', username);
 
   try {
     await client.connect();
@@ -61,7 +98,6 @@ app.post('/api/login', async (req, res) => {
 
     // Find user by username
     const user = await usersCollection.findOne({ username });
-    console.log('User found:', user);
 
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
@@ -76,6 +112,31 @@ app.post('/api/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Database error' });
+  } finally {
+    await client.close();
+  }
+});
+
+// Join team endpoint
+app.post('/api/join-team', async (req, res) => {
+  const { name, passcode } = req.body; // Get the team name and passcode from the request
+
+  try {
+    await client.connect();
+    const database = client.db("user_activity");
+    const teamsCollection = database.collection("teams");
+
+    // Find the team by name and passcode
+    const team = await teamsCollection.findOne({ name, passcode });
+    if (!team) {
+      return res.status(400).json({ message: 'Team not found or incorrect passcode.' });
+    }
+
+    // If found, alert the user that they have successfully joined the team
+    res.status(200).json({ message: 'Successfully joined the team!' });
+  } catch (error) {
+    console.error('Error joining team:', error);
+    res.status(500).json({ message: 'Server error' });
   } finally {
     await client.close();
   }
