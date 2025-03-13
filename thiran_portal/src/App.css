@@ -87,26 +87,38 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0.75rem;
-  background-color: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  color: var(--vercel-light-gray);
-  border-radius: 4px;
+  padding: 0.85rem;
+  background-color: rgba(203, 166, 247, 0.08);
+  border: 1px solid rgba(203, 166, 247, 0.3);
+  color: var(--vercel-white);
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.875rem;
+  font-weight: 500;
   transition: all 0.2s ease;
   margin-top: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .add-team-button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--vercel-white);
+  background-color: rgba(203, 166, 247, 0.15);
+  border-color: var(--vercel-purple);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 166, 247, 0.2);
 }
 
 .add-team-icon {
-  margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 0.75rem;
+  background-color: rgba(203, 166, 247, 0.2);
+  border-radius: 50%;
   font-size: 1rem;
+  font-weight: 600;
+  color: var(--vercel-purple);
 }
 
 .content-area {
@@ -587,22 +599,58 @@
 }
 
 /* Account Page Styles */
+.account-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  background: linear-gradient(to right, var(--vercel-purple), rgba(203, 166, 247, 0.7));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
+}
+
 .auth-simple {
-  max-width: 650px;
-  margin: 2rem auto;
+  max-width: 450px;
+  margin: 0 auto;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 100%;
 }
 
 .auth-form {
-  background-color: rgba(17, 17, 17, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(17, 17, 17, 0.7);
+  border: 1px solid rgba(203, 166, 247, 0.2);
   border-radius: 12px;
-  padding: 3rem;
+  padding: 2.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(203, 166, 247, 0.05);
+  backdrop-filter: blur(10px);
+  animation: form-fade-in 0.4s ease;
+}
+
+@keyframes form-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-group {
@@ -614,21 +662,29 @@
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
   font-weight: 500;
+  color: var(--vercel-white);
+  letter-spacing: 0.02em;
 }
 
 .auth-input {
   width: 100%;
-  background-color: var(--vercel-dark-gray);
+  background-color: rgba(17, 17, 17, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 0.85rem;
   color: white;
   font-size: 1rem;
+  transition: all 0.2s ease;
 }
 
 .auth-input:focus {
   outline: none;
   border-color: var(--vercel-purple);
+  box-shadow: 0 0 0 2px rgba(203, 166, 247, 0.2);
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .auth-button {
@@ -636,17 +692,25 @@
   background-color: var(--vercel-purple);
   color: var(--vercel-black);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 0.9rem;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
   margin-top: 1.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .auth-button:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(203, 166, 247, 0.2);
+}
+
+.auth-button:active {
+  transform: translateY(0);
 }
 
 .auth-toggle {
@@ -654,6 +718,18 @@
   font-size: 0.95rem;
   color: var(--vercel-light-gray);
   padding: 0.5rem;
+  animation: toggle-fade-in 0.4s ease;
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
+}
+
+@keyframes toggle-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .toggle-button {
@@ -664,10 +740,41 @@
   font-size: 0.95rem;
   padding: 0;
   font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .toggle-button:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+.auth-error {
+  background-color: rgba(255, 87, 87, 0.1);
+  border: 1px solid rgba(255, 87, 87, 0.3);
+  color: #ff5757;
+  padding: 0.85rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  animation: error-fade-in 0.3s ease;
+}
+
+@keyframes error-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Profile Section Styles */
@@ -876,34 +983,278 @@
 }
 
 .team-panel {
-  position: absolute;
-  top: 20%;
-  left: 10%;
-  transform: translateY(-50%);
-  background-color: rgba(17, 17, 17, 0.9);
-  border: 3px solid;
-  border-radius: 8px;
-  padding: 1rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(17, 17, 17, 0.95);
+  border: 1px solid rgba(203, 166, 247, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
   z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  width: 200px;
-  border-color: #cba6f7;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(203, 166, 247, 0.1);
+  width: 350px;
+  backdrop-filter: blur(10px);
+  animation: panel-fade-in 0.3s ease;
+}
+
+@keyframes panel-fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .team-panel h3 {
+  margin-bottom: 1.5rem;
+  color: var(--vercel-white);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.team-panel-input {
+  width: 100%;
+  background-color: rgba(17, 17, 17, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.85rem;
+  color: white;
+  font-size: 0.95rem;
   margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.team-panel-input:focus {
+  outline: none;
+  border-color: var(--vercel-purple);
+  box-shadow: 0 0 0 2px rgba(203, 166, 247, 0.2);
+}
+
+.team-panel-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.team-panel-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.team-panel-button {
+  width: 100%;
+  padding: 0.85rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.team-panel-button.primary {
+  background-color: var(--vercel-purple);
+  color: var(--vercel-black);
+  border: none;
+}
+
+.team-panel-button.primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.team-panel-button.secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--vercel-white);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.team-panel-button.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.team-panel-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--vercel-light-gray);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.team-panel-close:hover {
   color: var(--vercel-white);
 }
 
-.team-panel .button {
-  margin-bottom: 0.5rem;
+.team-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: overlay-fade-in 0.3s ease;
 }
 
-#thiranTeamCloseButton {
-  position: absolute;
-  background: transparent;
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Team loading indicator */
+.loading-teams {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--vercel-light-gray);
+  padding: 8px 0;
+  opacity: 0.8;
+}
+
+.loading-teams::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  border: 2px solid rgba(203, 166, 247, 0.3);
+  border-top: 2px solid var(--vercel-purple);
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Team Workspace Styles */
+.team-workspace-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: none;
   border: none;
-  outline: none;
-  left: 80%;
-  top: 10%;
+  color: var(--vercel-white);
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.team-workspace-button:hover {
+  background-color: rgba(203, 166, 247, 0.1);
+}
+
+.sidebar-list-item.active .team-workspace-button {
+  background-color: rgba(203, 166, 247, 0.15);
+  color: var(--vercel-purple);
+}
+
+.add-another-team-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--vercel-light-gray);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.add-another-team-button:hover {
+  color: var(--vercel-purple);
+}
+
+/* Passcode Notification */
+.passcode-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(17, 17, 17, 0.9);
+  color: var(--vercel-white);
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(203, 166, 247, 0.3);
+  z-index: 9999;
+  max-width: 320px;
+  animation: notification-slide-in 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(203, 166, 247, 0.2);
+}
+
+.passcode-content {
+  flex: 1;
+}
+
+.passcode-value {
+  display: inline-block;
+  background-color: rgba(203, 166, 247, 0.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin: 0 4px;
+  font-family: monospace;
+  font-weight: bold;
+  color: var(--vercel-purple);
+  border: 1px solid rgba(203, 166, 247, 0.3);
+  user-select: all;
+}
+
+.passcode-info {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--vercel-light-gray);
+}
+
+.passcode-close {
+  background: none;
+  border: none;
+  color: var(--vercel-light-gray);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0 0 10px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.passcode-close:hover {
+  color: var(--vercel-white);
+}
+
+@keyframes notification-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }

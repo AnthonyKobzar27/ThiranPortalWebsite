@@ -10,85 +10,189 @@ function Layout({ children }) {
   const [showTeamPanel, setShowTeamPanel] = useState(false);
   const [teamName, setTeamName] = useState('');
   const [passcode, setPasscode] = useState('');
+  const [userTeams, setUserTeams] = useState([]);
   const navigate = useNavigate();
+  const dropdownRef = React.useRef(null);
 
+  // Simple toggle functions for dropdowns
   const toggleAccountDropdown = () => {
     setShowAccountDropdown(!showAccountDropdown);
+    setShowUserDropdown(false);
   };
 
   const toggleUserDropdown = () => {
     setShowUserDropdown(!showUserDropdown);
+    setShowAccountDropdown(false);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('username'); // Clear username from local storage
-    setUsername(''); // Clear username state
-    navigate('/account'); // Redirect to account page
-    window.location.reload();
+    localStorage.removeItem('username');
+    setUsername('');
+    navigate('/account');
   };
 
   const toggleTeamPanel = () => {
     setShowTeamPanel(!showTeamPanel);
   };
 
-  const handleCreateTeam = async () => {
-    if (!teamName) {
-      alert('Please enter a team name.');
-      return;
-    }
-
+  // Simple fetch for user teams
+  const fetchUserTeams = async () => {
+    if (!username) return;
+    
     try {
-      const response = await fetch('http://localhost:5000/api/create-team', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: teamName }),
-      });
-      const data = await response.json();
+      const response = await fetch(`http://localhost:5001/api/user-teams/${username}`);
       if (response.ok) {
-        alert(`Team created successfully! Your passcode is: ${data.passcode}`);
-        setTeamName(''); // Clear the input field
-        toggleTeamPanel(); // Close the panel after creating the team
-      } else {
-        alert(data.message);
+        const data = await response.json();
+        console.log('Teams data:', data.teams);
+        if (data.teams && Array.isArray(data.teams)) {
+          setUserTeams(data.teams);
+        }
       }
     } catch (error) {
-      console.error('Error creating team:', error);
-      alert('An error occurred while creating the team. Please try again.');
+      console.error('Error fetching teams:', error);
     }
   };
 
+  // Simple join team function
   const handleJoinTeam = async () => {
     if (!teamName || !passcode) {
       alert('Please enter both team name and passcode.');
       return;
     }
 
+    if (!username) {
+      alert('You must be logged in to join a team.');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:5000/api/join-team', {
+      console.log('Joining team with:', { name: teamName, passcode, username });
+      
+      const response = await fetch('http://localhost:5001/api/join-team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: teamName, passcode }),
+        body: JSON.stringify({ name: teamName, passcode, username }),
       });
+      
       const data = await response.json();
+      console.log('Join team response:', data);
+      
       if (response.ok) {
-        alert(data.message); // Alert success message
-        setTeamName(''); // Clear the input field
-        setPasscode(''); // Clear the passcode field
-        toggleTeamPanel(); // Close the panel after joining the team
+        // Add the team to state directly
+        if (data.team) {
+          const newTeam = { teamId: data.team.id, name: data.team.name };
+          console.log('Adding new team:', newTeam);
+          
+          // Check if the team already exists in our state
+          if (!userTeams.some(team => team.teamId === newTeam.teamId)) {
+            console.log('Team not found in state, adding it now');
+            setUserTeams(prev => [...prev, newTeam]);
+          } else {
+            console.log('Team already exists in state');
+          }
+        }
+        
+        // Clear form and close panel
+        setTeamName('');
+        setPasscode('');
+        toggleTeamPanel();
       } else {
-        alert(data.message);
+        console.error('Error joining team:', data.message);
+        alert(data.message || 'Failed to join team');
       }
     } catch (error) {
       console.error('Error joining team:', error);
-      alert('An error occurred while joining the team. Please try again.');
+      alert('Error joining team: ' + error.message);
     }
   };
 
+  // Simple create team function
+  const handleCreateTeam = async () => {
+    if (!teamName) {
+      alert('Please enter a team name.');
+      return;
+    }
+
+    if (!username) {
+      alert('You must be logged in to create a team.');
+      return;
+    }
+
+    try {
+      console.log('Creating team with name:', teamName, 'for user:', username);
+      
+      const response = await fetch('http://localhost:5001/api/create-team', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: teamName, username }),
+      });
+      
+      const data = await response.json();
+      console.log('Create team response:', data);
+      
+      if (response.ok) {
+        alert(`Team created! Your passcode is: ${data.passcode}`);
+        
+        // Add the team to state directly
+        if (data.team) {
+          const newTeam = { teamId: data.team.id, name: data.team.name };
+          console.log('Adding newly created team:', newTeam);
+          
+          // Check if the team already exists in our state
+          if (!userTeams.some(team => team.teamId === newTeam.teamId)) {
+            console.log('Team not found in state, adding it now');
+            setUserTeams(prev => [...prev, newTeam]);
+          } else {
+            console.log('Team already exists in state');
+          }
+        }
+        
+        // Clear form and close panel
+        setTeamName('');
+        toggleTeamPanel();
+      } else {
+        console.error('Error creating team:', data.message);
+        alert(data.message || 'Failed to create team');
+      }
+    } catch (error) {
+      console.error('Error creating team:', error);
+      alert('Error creating team: ' + error.message);
+    }
+  };
+
+  // Load username on mount
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
     if (storedUsername) {
       setUsername(storedUsername);
     }
+  }, []);
+
+  // Fetch teams when username changes
+  useEffect(() => {
+    if (username) {
+      console.log('Fetching teams for user:', username);
+      fetchUserTeams();
+    }
+  }, [username]);
+
+  // Add debugging for userTeams state changes
+  useEffect(() => {
+    console.log('userTeams updated:', userTeams);
+  }, [userTeams]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowAccountDropdown(false);
+        setShowUserDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   return (
@@ -104,12 +208,12 @@ function Layout({ children }) {
           <Link to="/analytics" className={path === '/analytics' ? 'active' : ''}>Analytics</Link>
           <Link to="/reports" className={path === '/reports' ? 'active' : ''}>Reports</Link>
           
-          <div className="account-dropdown-container">
+          <div className="account-dropdown-container" ref={dropdownRef}>
             <div 
               className="profile-icon" 
-              onClick={username ? (toggleUserDropdown) : (toggleAccountDropdown)}
+              onClick={username ? toggleUserDropdown : toggleAccountDropdown}
               aria-haspopup="true"
-              aria-expanded={showAccountDropdown}
+              aria-expanded={showAccountDropdown || showUserDropdown}
             >
               <img 
                 src="https://ui-avatars.com/api/?name=User&background=313244&color=fff&size=32" 
@@ -144,12 +248,31 @@ function Layout({ children }) {
           <div className="sidebar-section">
             <h3 className="sidebar-title">Teams</h3>
             <ul className="sidebar-list">
-              <li className="sidebar-list-item">
-                <button className="add-team-button" onClick={toggleTeamPanel}>
-                  <span className="add-team-icon">+</span>
-                  Add teams to start
-                </button>
-              </li>
+              {userTeams && userTeams.length > 0 ? (
+                <>
+                  {/* Simple team buttons */}
+                  {userTeams.map((team, index) => (
+                    <li key={team.teamId || index} className="sidebar-list-item">
+                      <button className="team-workspace-button">
+                        <span className="sidebar-icon">◇</span>
+                        {team.name}
+                      </button>
+                    </li>
+                  ))}
+                  <li className="sidebar-list-item">
+                    <button className="add-another-team-button" onClick={toggleTeamPanel}>
+                      + Add another team
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li className="sidebar-list-item">
+                  <button className="add-team-button" onClick={toggleTeamPanel}>
+                    <div className="add-team-icon">+</div>
+                    Add teams to start
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
           
@@ -184,29 +307,34 @@ function Layout({ children }) {
       </div>
 
       {showTeamPanel && (
-        <div className="team-panel">
-          <h3>Add or Join a Team</h3>
-          <input 
-            type="text" 
-            placeholder="Enter team name here!" 
-            value={teamName} 
-            onChange={(e) => setTeamName(e.target.value)} 
-            style={{ marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-          />
-          <input 
-            type="text" 
-            placeholder="Enter passcode here!" 
-            value={passcode} 
-            onChange={(e) => setPasscode(e.target.value)} 
-            style={{ marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-          />
-          <button className="button" onClick={handleCreateTeam}>Create a Team</button>
-          <button className="button" onClick={handleJoinTeam}>Join a Team</button>
-          <button className="button" onClick={toggleTeamPanel}>Close</button>
-        </div>
+        <>
+          <div className="team-panel-overlay" onClick={toggleTeamPanel}></div>
+          <div className="team-panel">
+            <button className="team-panel-close" onClick={toggleTeamPanel}>×</button>
+            <h3>Add or Join a Team</h3>
+            <input 
+              type="text" 
+              className="team-panel-input"
+              placeholder="Team name" 
+              value={teamName} 
+              onChange={(e) => setTeamName(e.target.value)} 
+            />
+            <input 
+              type="text" 
+              className="team-panel-input"
+              placeholder="Passcode (for joining existing teams)" 
+              value={passcode} 
+              onChange={(e) => setPasscode(e.target.value)} 
+            />
+            <div className="team-panel-buttons">
+              <button className="team-panel-button primary" onClick={handleCreateTeam}>Create Team</button>
+              <button className="team-panel-button secondary" onClick={handleJoinTeam}>Join Team</button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-export default Layout; 
+export default Layout;

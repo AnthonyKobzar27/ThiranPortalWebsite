@@ -32,24 +32,47 @@ const generatePasscode = () => {
 
 // Create team endpoint
 app.post('/api/create-team', async (req, res) => {
-  const { name } = req.body; // Get the team name from the request
+  const { name, username } = req.body; // Get the team name and username from the request
+  console.log('Creating team:', { name, username });
+  
   const passcode = generatePasscode(); // Generate a random passcode
 
   try {
     await client.connect();
     const database = client.db("user_activity");
     const teamsCollection = database.collection("teams");
+    const usersCollection = database.collection("users");
 
     // Check if the team name already exists
     const existingTeam = await teamsCollection.findOne({ name });
     if (existingTeam) {
+      console.log('Team name already exists:', name);
       return res.status(400).json({ message: 'Team name already exists.' });
     }
 
     const newTeam = { name, passcode };
-    await teamsCollection.insertOne(newTeam);
+    const result = await teamsCollection.insertOne(newTeam);
+    
+    // Convert ObjectId to string to avoid serialization issues
+    const teamId = result.insertedId.toString();
+    console.log('Team created with ID:', teamId);
 
-    res.status(201).json({ message: 'Team created successfully.', passcode }); // Return the passcode to the team leader
+    // Add the team to the user's teams array
+    if (username) {
+      await usersCollection.updateOne(
+        { username },
+        { $addToSet: { teams: { teamId, name } } }
+      );
+      console.log('Team added to user:', username);
+    }
+
+    const response = { 
+      message: 'Team created successfully.', 
+      passcode,
+      team: { id: teamId, name }
+    };
+    console.log('Sending response:', response);
+    res.status(201).json(response); // Return the passcode to the team leader
   } catch (error) {
     console.error('Error creating team:', error);
     res.status(500).json({ message: 'Server error' });
@@ -75,7 +98,14 @@ app.post('/api/register', async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = { username, email, password: hashedPassword };
+    // Initialize with empty teams array
+    const newUser = { 
+      username, 
+      email, 
+      password: hashedPassword, 
+      teams: [] 
+    };
+    
     await usersCollection.insertOne(newUser);
 
     res.status(201).json({ message: 'User registered successfully' });
@@ -108,7 +138,7 @@ app.post('/api/login', async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: 'Incorrect password' });
     }
-    res.status(200).json({ message: 'Login successful', userData: { username: user.username, userId: user._id } });
+    res.status(200).json({ message: 'Login successful', userData: { username: user.username, userId: user._id.toString() } });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Database error' });
@@ -119,21 +149,50 @@ app.post('/api/login', async (req, res) => {
 
 // Join team endpoint
 app.post('/api/join-team', async (req, res) => {
-  const { name, passcode } = req.body; // Get the team name and passcode from the request
+  const { name, passcode, username } = req.body; // Get the team name, passcode and username
+  console.log('Join team request:', { name, passcode, username });
 
   try {
     await client.connect();
     const database = client.db("user_activity");
     const teamsCollection = database.collection("teams");
+    const usersCollection = database.collection("users");
 
     // Find the team by name and passcode
     const team = await teamsCollection.findOne({ name, passcode });
+    console.log('Team found:', team);
+    
     if (!team) {
+      console.log('Team not found or incorrect passcode');
       return res.status(400).json({ message: 'Team not found or incorrect passcode.' });
     }
 
-    // If found, alert the user that they have successfully joined the team
-    res.status(200).json({ message: 'Successfully joined the team!' });
+    // Update the user's teams array
+    if (username) {
+      // Convert ObjectId to string to avoid serialization issues
+      const teamInfo = { 
+        teamId: team._id.toString(), 
+        name: team.name 
+      };
+      console.log('Adding team to user:', teamInfo);
+      
+      await usersCollection.updateOne(
+        { username },
+        { $addToSet: { teams: teamInfo } }
+      );
+
+      const response = { 
+        message: 'Successfully joined the team!',
+        team: { id: team._id.toString(), name: team.name }
+      };
+      console.log('Sending response:', response);
+      
+      // If found, alert the user that they have successfully joined the team
+      res.status(200).json(response);
+    } else {
+      console.log('Username is required but not provided');
+      res.status(400).json({ message: 'Username is required to join a team.' });
+    }
   } catch (error) {
     console.error('Error joining team:', error);
     res.status(500).json({ message: 'Server error' });
@@ -142,8 +201,40 @@ app.post('/api/join-team', async (req, res) => {
   }
 });
 
+// Get user teams endpoint
+app.get('/api/user-teams/:username', async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    await client.connect();
+    const database = client.db("user_activity");
+    const usersCollection = database.collection("users");
+
+    // Find user and get their teams
+    const user = await usersCollection.findOne({ username });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Ensure teams array exists and is properly formatted
+    const teams = user.teams || [];
+    
+    // Log for debugging
+    console.log('Fetched teams for user:', username);
+    console.log('Teams data:', JSON.stringify(teams));
+    
+    res.status(200).json({ teams });
+  } catch (error) {
+    console.error('Error fetching user teams:', error);
+    res.status(500).json({ message: 'Server error' });
+  } finally {
+    await client.close();
+  }
+});
+
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = 5001;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
