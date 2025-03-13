@@ -11,6 +11,7 @@ function Layout({ children }) {
   const [teamName, setTeamName] = useState('');
   const [passcode, setPasscode] = useState('');
   const [userTeams, setUserTeams] = useState([]);
+  const [activeTeam, setActiveTeam] = useState(null);
   const navigate = useNavigate();
   const dropdownRef = React.useRef(null);
 
@@ -43,7 +44,6 @@ function Layout({ children }) {
       const response = await fetch(`http://localhost:5001/api/user-teams/${username}`);
       if (response.ok) {
         const data = await response.json();
-        console.log('Teams data:', data.teams);
         if (data.teams && Array.isArray(data.teams)) {
           setUserTeams(data.teams);
         }
@@ -160,6 +160,29 @@ function Layout({ children }) {
     }
   };
 
+  // Handle team selection
+  const handleTeamSelect = (team) => {
+    console.log('Team selected:', team);
+    
+    // First, check if we're changing to a different team
+    const isTeamChange = !activeTeam || activeTeam.teamId !== team.teamId;
+    
+    // Update state and localStorage
+    setActiveTeam(team);
+    localStorage.setItem('activeTeam', JSON.stringify(team));
+    
+    // Navigate to home if not already there
+    if (path !== '/') {
+      navigate('/');
+    } else if (isTeamChange) {
+      // If we're already on home and changing teams, refresh the page
+      // Use a short timeout to ensure localStorage is updated first
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
+  };
+
   // Load username on mount
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
@@ -168,18 +191,24 @@ function Layout({ children }) {
     }
   }, []);
 
-  // Fetch teams when username changes
+  // Fetch teams when username is available - but only once
   useEffect(() => {
     if (username) {
-      console.log('Fetching teams for user:', username);
       fetchUserTeams();
     }
   }, [username]);
 
-  // Add debugging for userTeams state changes
+  // Effect to load active team from localStorage on mount
   useEffect(() => {
-    console.log('userTeams updated:', userTeams);
-  }, [userTeams]);
+    const storedActiveTeam = localStorage.getItem('activeTeam');
+    if (storedActiveTeam) {
+      try {
+        setActiveTeam(JSON.parse(storedActiveTeam));
+      } catch (error) {
+        console.error('Error parsing active team from localStorage:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -253,7 +282,10 @@ function Layout({ children }) {
                   {/* Simple team buttons */}
                   {userTeams.map((team, index) => (
                     <li key={team.teamId || index} className="sidebar-list-item">
-                      <button className="team-workspace-button">
+                      <button 
+                        className={`team-workspace-button ${activeTeam && activeTeam.teamId === team.teamId ? 'active' : ''}`} 
+                        onClick={() => handleTeamSelect(team)}
+                      >
                         <span className="sidebar-icon">◇</span>
                         {team.name}
                       </button>

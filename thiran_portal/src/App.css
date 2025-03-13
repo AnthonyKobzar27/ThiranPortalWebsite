@@ -1167,6 +1167,15 @@
   background-color: rgba(203, 166, 247, 0.1);
 }
 
+.team-workspace-button.active {
+  background-color: #cba6f7; /* Light purple background for active team */
+  border-left: 3px solid #9b73e6; /* Darker purple left border for emphasis */
+  font-weight: 500;
+}
+
+/* Hover state for active team button */
+
+
 .sidebar-list-item.active .team-workspace-button {
   background-color: rgba(203, 166, 247, 0.15);
   color: var(--vercel-purple);
@@ -1257,4 +1266,12 @@
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+/* Style for team name in welcome message */
+.gradient-text.team-name {
+  color: #9b73e6;
+  font-weight: 500;
+  border-bottom: 2px solid #c8b6e2;
+  padding-bottom: 2px;
 }

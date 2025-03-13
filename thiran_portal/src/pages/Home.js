@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 function Home() {
   const [username, setUsername] = useState('');
+  const [activeTeam, setActiveTeam] = useState(null);
 
   useEffect(() => {
     // Retrieve username from local storage
@@ -10,13 +11,29 @@ function Home() {
     if (storedUsername) {
       setUsername(storedUsername);
     }
+    
+    // Retrieve active team from local storage
+    const storedActiveTeam = localStorage.getItem('activeTeam');
+    if (storedActiveTeam) {
+      try {
+        setActiveTeam(JSON.parse(storedActiveTeam));
+        // Removed window.location.reload() - this was causing infinite refresh!
+      } catch (error) {
+        console.error('Error parsing active team:', error);
+      }
+    }
   }, []);
 
   return (
     <header className="App-header">
       <div className="hero-section">
         {username ? (
-          <h1>Welcome <span className="gradient-text">{username}</span></h1>
+          <h1>
+            Welcome <span className="gradient-text">{username}</span>
+            {activeTeam && (
+              <span> to <span className="gradient-text team-name">{activeTeam.name}</span></span>
+            )}
+          </h1>
         ) : (
           <h1>Analytics for <span className="gradient-text">Modern Teams</span></h1>
         )}

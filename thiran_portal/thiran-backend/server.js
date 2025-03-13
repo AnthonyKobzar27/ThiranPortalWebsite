@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
+// MongoDB connection setup
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@${process.env.MONGO_CLUSTER}/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -19,6 +19,20 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+// Connect to MongoDB once at startup
+async function connectToMongoDB() {
+  try {
+    await client.connect();
+    console.log("Connected to MongoDB!");
+  } catch (error) {
+    console.error("Failed to connect to MongoDB:", error);
+    process.exit(1); // Exit if we can't connect to the database
+  }
+}
+
+// Connect to MongoDB when the server starts
+connectToMongoDB();
 
 // Function to generate a random 10-character passcode
 const generatePasscode = () => {
@@ -38,7 +52,6 @@ app.post('/api/create-team', async (req, res) => {
   const passcode = generatePasscode(); // Generate a random passcode
 
   try {
-    await client.connect();
     const database = client.db("user_activity");
     const teamsCollection = database.collection("teams");
     const usersCollection = database.collection("users");
@@ -76,8 +89,6 @@ app.post('/api/create-team', async (req, res) => {
   } catch (error) {
     console.error('Error creating team:', error);
     res.status(500).json({ message: 'Server error' });
-  } finally {
-    await client.close();
   }
 });
 
@@ -86,7 +97,6 @@ app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    await client.connect();
     const database = client.db("user_activity");
     const usersCollection = database.collection("users");
 
@@ -112,8 +122,6 @@ app.post('/api/register', async (req, res) => {
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
-  } finally {
-    await client.close();
   }
 });
 
@@ -122,7 +130,6 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    await client.connect();
     const database = client.db("user_activity");
     const usersCollection = database.collection("users");
 
@@ -142,8 +149,6 @@ app.post('/api/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Database error' });
-  } finally {
-    await client.close();
   }
 });
 
@@ -153,7 +158,6 @@ app.post('/api/join-team', async (req, res) => {
   console.log('Join team request:', { name, passcode, username });
 
   try {
-    await client.connect();
     const database = client.db("user_activity");
     const teamsCollection = database.collection("teams");
     const usersCollection = database.collection("users");
@@ -196,8 +200,6 @@ app.post('/api/join-team', async (req, res) => {
   } catch (error) {
     console.error('Error joining team:', error);
     res.status(500).json({ message: 'Server error' });
-  } finally {
-    await client.close();
   }
 });
 
@@ -206,30 +208,20 @@ app.get('/api/user-teams/:username', async (req, res) => {
   const { username } = req.params;
 
   try {
-    await client.connect();
     const database = client.db("user_activity");
     const usersCollection = database.collection("users");
 
-    // Find user and get their teams
+    // Find the user
     const user = await usersCollection.findOne({ username });
-    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Ensure teams array exists and is properly formatted
-    const teams = user.teams || [];
-    
-    // Log for debugging
-    console.log('Fetched teams for user:', username);
-    console.log('Teams data:', JSON.stringify(teams));
-    
-    res.status(200).json({ teams });
+    // Return the user's teams
+    res.status(200).json({ teams: user.teams || [] });
   } catch (error) {
     console.error('Error fetching user teams:', error);
     res.status(500).json({ message: 'Server error' });
-  } finally {
-    await client.close();
   }
 });
 
