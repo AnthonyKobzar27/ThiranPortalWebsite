@@ -28,40 +28,73 @@ function Home() {
     <header className="App-header">
       <div className="hero-section">
         {username ? (
-          <h1>
-            Welcome <span className="gradient-text">{username}</span>
-            {activeTeam && (
-              <span> to <span className="gradient-text team-name">{activeTeam.name}</span></span>
-            )}
-          </h1>
+          <>
+            <h1 className="large-heading">
+              Welcome <span className="gradient-text">{username}</span>
+              {activeTeam && (
+                <span> to <span className="gradient-text team-name">{activeTeam.name}</span></span>
+              )}
+            </h1>
+            {/* Buttons removed for signed-in users */}
+          </>
         ) : (
-          <h1>Analytics for <span className="gradient-text">Modern Teams</span></h1>
+          <>
+            <h1 className="large-heading">Analytics for <span className="gradient-text">Modern Teams</span></h1>
+            <div className="centered-button-group">
+              <button className="button primary large-button" onClick={() => window.location.href = '/account'}>Get Started</button>
+              <button className="button secondary large-button" onClick={() => window.location.href = '/demo'}>View Demo</button>
+            </div>
+          </>
         )}
-        <p>Track performance, analyze trends, and make data-driven decisions with Thiran's powerful analytics platform.</p>
-        <button className="button primary">Get Started</button>
       </div>
 
       <div className="App-dashboard">
-        <div className="App-card">
-          <h2>Performance Metrics</h2>
-          <p>Monitor key performance indicators and track progress toward your goals.</p>
-          <button className="button">View Dashboard</button>
-        </div>
-        
-        <div className="App-card">
-          <h2>Team Analytics</h2>
-          <p>Gain insights into team performance and identify opportunities for growth.</p>
-          <button className="button">Explore Analytics</button>
-        </div>
-        
-        <div className="App-card">
-          <h2>Custom Reports</h2>
-          <p>Create and share custom reports tailored to your specific needs.</p>
-          <button className="button">Generate Reports</button>
-        </div>
+        {username ? (
+          // Dashboard cards for logged-in users
+          <>
+            <div className="App-card">
+              <h2>Performance Metrics</h2>
+              <p>Monitor key performance indicators and track progress toward your goals.</p>
+              <button className="button" onClick={() => window.location.href = '/analytics'}>View Dashboard</button>
+            </div>
+            
+            <div className="App-card">
+              <h2>Team Analytics</h2>
+              <p>Gain insights into team performance and identify opportunities for growth.</p>
+              <button className="button" onClick={() => window.location.href = '/analytics'}>Explore Analytics</button>
+            </div>
+            
+            <div className="App-card">
+              <h2>Custom Reports</h2>
+              <p>Create and share custom reports tailored to your specific needs.</p>
+              <button className="button" onClick={() => window.location.href = '/reports'}>Generate Reports</button>
+            </div>
+          </>
+        ) : (
+          // Marketing cards for non-logged-in users
+          <>
+            <div className="App-card">
+              <h2>Team Collaboration</h2>
+              <p>Work together seamlessly with your team members, no matter where they are located.</p>
+              <button className="button" onClick={() => window.location.href = '/demo'}>Learn More</button>
+            </div>
+            
+            <div className="App-card">
+              <h2>Data Visualization</h2>
+              <p>Transform complex data into clear, actionable insights with our visualization tools.</p>
+              <button className="button" onClick={() => window.location.href = '/demo'}>See Examples</button>
+            </div>
+            
+            <div className="App-card">
+              <h2>Secure Platform</h2>
+              <p>Your data is protected with enterprise-grade security and compliance measures.</p>
+              <button className="button" onClick={() => window.location.href = '/about-us'}>Our Commitment</button>
+            </div>
+          </>
+        )}
       </div>
     </header>
   );
 }
 
-export default Home; 
+export default Home;

@@ -30,6 +30,7 @@ function Layout({ children }) {
     localStorage.removeItem('username');
     setUsername('');
     navigate('/account');
+    window.location.reload();
   };
 
   const toggleTeamPanel = () => {
@@ -233,10 +234,22 @@ function Layout({ children }) {
         </div>
 
         <div className="App-navbar-links">
-          <Link to="/" className={path === '/' ? 'active' : ''}>Dashboard</Link>
-          <Link to="/analytics" className={path === '/analytics' ? 'active' : ''}>Analytics</Link>
-          <Link to="/reports" className={path === '/reports' ? 'active' : ''}>Reports</Link>
+          {/* Home is available for both logged-in and non-logged-in users */}
+          <Link to="/" className={path === '/' ? 'active' : ''}>Home</Link>
           
+          {username ? (
+            // Logged-in user navigation
+            <>
+              <Link to="/analytics" className={path === '/analytics' ? 'active' : ''}>Analytics</Link>
+              <Link to="/reports" className={path === '/reports' ? 'active' : ''}>Reports</Link>
+            </>
+          ) : (
+            // Non-logged-in user navigation
+            <>
+              <Link to="/demo" className={path === '/demo' ? 'active' : ''}>Demo</Link>
+              <Link to="/about-us" className={path === '/about-us' ? 'active' : ''}>About Us</Link>
+            </>
+          )}
           <div className="account-dropdown-container" ref={dropdownRef}>
             <div 
               className="profile-icon" 
